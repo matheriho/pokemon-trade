@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ポケモン交換広場</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#f4f7fb;color:#172033}header{padding:30px 16px;text-align:center;color:#fff;background:linear-gradient(135deg,#3157d5,#7b55d9)}main{max-width:900px;margin:24px auto;padding:0 16px}.card{background:#fff;padding:20px;border-radius:18px;margin-bottom:18px;box-shadow:0 5px 20px #dce1ec}h1{margin:0}h2{margin-top:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}input,select,textarea{width:100%;padding:12px;border:1px solid #d8deea;border-radius:10px;font-size:15px;box-sizing:border-box}textarea{min-height:90px}.full{grid-column:1/-1}button{padding:12px 18px;border:0;border-radius:10px;background:#3157d5;color:#fff;font-weight:700}.toolbar{display:grid;grid-template-columns:2fr 1fr;gap:10px}.trade{border:1px solid #e1e6f0;border-radius:14px;padding:15px;margin-top:12px}.top{display:flex;justify-content:space-between;gap:10px}.badge,.game{background:#eef2ff;color:#3157d5;padding:5px 9px;border-radius:999px;font-size:12px}.games{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.muted{color:#667085;font-size:13px}@media(max-width:650px){.grid,.toolbar{grid-template-columns:1fr}.full{grid-column:auto}.top{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><h1>🎮 ポケモン交換広場</h1><p>いろんなポケモンシリーズの交換相手を探そう！</p></header>
+<main>
+<section class="card"><h2>🔄 交換募集を出す</h2>
+<div class="grid">
+<div><label>求めるポケモン</label><input id="want" placeholder="例：ザシアン"></div>
+<div><label>出せるポケモン</label><input id="give" placeholder="例：ザマゼンタ"></div>
+<div><label>使用ソフト</label><select id="game">
+<option>スカーレット・バイオレット</option><option>ソード・シールド</option><option>ブリリアントダイヤモンド・シャイニングパール</option><option>Pokémon LEGENDS アルセウス</option><option>Let's Go! ピカチュウ・Let's Go! イーブイ</option><option>Pokémon HOME</option><option>その他</option></select></div>
+<div><label>カテゴリ</label><select id="cat"><option>通常交換</option><option>図鑑埋め</option><option>色違い</option><option>伝説・幻</option><option>その他</option></select></div>
+<div><label>募集者名</label><input id="user" placeholder="例：チャッピー"></div>
+<div><label>交換方法</label><select id="method"><option>ゲーム内通信交換</option><option>Pokémon HOME</option><option>その他</option></select></div>
+<div class="full"><label>コメント</label><textarea id="comment" placeholder="希望の条件など"></textarea></div>
+<div class="full"><button onclick="addTrade()">募集を投稿する</button></div>
+</div></section>
+<section class="card"><h2>🔎 交換募集を探す</h2>
+<div class="toolbar"><input id="search" placeholder="ポケモン名などで検索" oninput="render()"><select id="filter" onchange="render()"><option>すべてのソフト</option><option>スカーレット・バイオレット</option><option>ソード・シールド</option><option>ブリリアントダイヤモンド・シャイニングパール</option><option>Pokémon LEGENDS アルセウス</option><option>Let's Go! ピカチュウ・Let's Go! イーブイ</option><option>Pokémon HOME</option><option>その他</option></select></div>
+<div id="trades"></div></section>
+</main>
+<script>
+const key="pokemonTradeAll";
+const samples=[
+{w:"ザシアン",g:"ザマゼンタ",game:"ソード・シールド",cat:"伝説・幻",m:"ゲーム内通信交換",u:"ポケモントレーナー",c:"剣盾同士で交換希望！"},
+{w:"色違いイーブイ",g:"色違いコイキング",game:"スカーレット・バイオレット",cat:"色違い",m:"ゲーム内通信交換",u:"ミント",c:"条件相談できます。"},
+{w:"ポリゴン",g:"図鑑埋め用ポケモン",game:"Pokémon HOME",cat:"図鑑埋め",m:"Pokémon HOME",u:"しろ",c:"HOMEで交換できる方お願いします。"}];
+function data(){return JSON.parse(localStorage.getItem(key)||"null")||samples}
+function esc(s){return String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]))}
+function addTrade(){let w=want.value.trim(),g=give.value.trim();if(!w||!g){alert("求めるポケモンと出せるポケモンを入力してね！");return}let a=data();a.unshift({w,g,game:game.value,cat:cat.value,m:method.value,u:user.value.trim()||"匿名",c:comment.value.trim()||"交換条件は相談しましょう！"});localStorage.setItem(key,JSON.stringify(a));render()}
+function render(){let q=search.value.trim().toLowerCase(),f=filter.value;let a=data().filter(t=>(f==="すべてのソフト"||t.game===f)&&(!q||(t.w+t.g+t.c+t.u+t.game).toLowerCase().includes(q)));trades.innerHTML=a.map(t=>`<div class="trade"><div class="top"><b>求：${esc(t.w)} ⇄ 出：${esc(t.g)}</b><span class="badge">${esc(t.cat)}</span></div><div class="games"><span class="game">🎮 ${esc(t.game)}</span><span class="game">🔗 ${esc(t.m)}</span></div><p>${esc(t.c)}</p><div class="muted">募集者：${esc(t.u)}</div></div>`).join("")||"<p class='muted'>条件に合う募集がありません。</p>"}
+render();
+</script>
+</body></html>
